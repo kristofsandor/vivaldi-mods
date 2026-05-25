@@ -1,0 +1,17 @@
+/* Dim titles of hibernated/discarded tabs in Vivaldi */
+
+.tab.isdiscarded .title,
+.tab.tab-accordion.isdiscarded .title {
+    opacity: 0.45 !important;
+}
+
+/* Optional: dim favicon too */
+.tab.isdiscarded .favicon {
+    opacity: 0.5 !important;
+}
+
+/* Optional: restore full opacity on hover or active tab */
+.tab.isdiscarded:hover .title,
+.tab.active.isdiscarded .title {
+    opacity: 1 !important;
+}

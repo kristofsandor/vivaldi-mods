@@ -1,0 +1,4 @@
+/* Force the tab area to consume remaining flex space */
+.resize:has([role="tablist"]) {
+    max-height: none !important;
+}

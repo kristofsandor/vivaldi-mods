@@ -1,0 +1,420 @@
+/*
+Arc Like Favourite Tabs
+version 2025.10.31
+Author PaRr0tBoY
+https://github.com/PaRr0tBoY/Awesome-Vivaldi
+Arc Like Favourite Tabs, or call it Zen Essentials.
+Supports 2, 3, or 4 pinned tabs per row via --pinned-column-count.
+*/
+
+/* === Uncomment :root to use and config this mod independently === */
+:root {
+  --fluid-tabs-grid: on;
+  --fluid-pin-at-top: off;
+
+  --pinned-column-count: 3;
+  --pinned-gap: 5px;
+  --tab-gap: 2px;
+  --pinned-icon-size: 20px;
+  --pinned-tab-height: 50px;
+  --animation-speed: 280ms;
+}
+
+/* Fluid tabs grid layout for pinned tabs */
+@container style(--fluid-tabs-grid: on) {
+  /* Container adjustments */
+  .resize {
+    max-height: fit-content !important;
+    overflow: hidden !important;
+  }
+
+  /* Grid layout for tab strip — column gap only; row spacing via span margin-bottom */
+  #tabs-container .tab-strip {
+    display: grid !important;
+    grid-template-columns: repeat(var(--pinned-column-count), minmax(0, 1fr));
+    grid-auto-rows: min-content;
+    row-gap: 0 !important;
+    column-gap: var(--pinned-gap) !important;
+  }
+
+  /*
+   * Pinned spans: auto-place (one per column).
+   * Explicit height = tab height + row gap. The tab-wrapper fills the top
+   * --pinned-tab-height px; the remaining --pinned-gap px is empty space
+   * that acts as the row gap without relying on grid row-gap or margins.
+   */
+  #tabs-container .tab-strip > span:has(.tab-position.is-pinned) {
+    grid-column: auto !important;
+    height: calc(var(--pinned-tab-height) + var(--pinned-gap)) !important;
+  }
+
+  /* display:contents removes the .tab-position box so the span's height
+     is driven directly by .tab-wrapper (min/max-height: --pinned-tab-height). */
+  #tabs-container .tab-strip > span:has(.tab-position.is-pinned) > .tab-position.is-pinned {
+    display: contents !important;
+  }
+
+  /*
+   * Non-pinned spans: display:contents makes their inner .tab-position
+   * participate in the grid visually as if the span doesn't exist.
+   * This bypasses any Vivaldi grid-column override on span elements.
+   */
+  #tabs-container .tab-strip > span:not(:has(.tab-position.is-pinned)) {
+    display: contents !important;
+  }
+
+  /*
+   * Non-pinned .tab-position (visual grid items via display:contents parent)
+   * span the full row. Specificity (1,4,1) — higher than any span-targeted rule.
+   */
+  #tabs-container
+    .tab-strip
+    > span:not(:has(.tab-position.is-pinned))
+    > .tab-position {
+    grid-column: 1 / -1 !important;
+    position: relative !important;
+    transform: none !important;
+    width: 100% !important;
+    margin-bottom: var(--tab-gap) !important;
+  }
+
+  /* Direct div children (separator, accordion arrows) also span full row */
+  #tabs-container .tab-strip > div {
+    grid-column: 1 / -1 !important;
+    position: relative !important;
+    transform: none !important;
+    width: 100% !important;
+  }
+
+  /* Square button style for all pinned tabs */
+  #tabs-container
+    .tab-strip
+    > span:has(.is-pinned)
+    .is-pinned
+    .tab-wrapper {
+    max-height: var(--pinned-tab-height) !important;
+    min-height: var(--pinned-tab-height) !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 150;
+    background-color: var(--colorBgAlpha) !important;
+    border: 1px solid var(--colorHighlightBgDark) !important;
+  }
+
+  #tabs-container
+    .tab-strip
+    > span:has(.is-pinned)
+    .is-pinned
+    .tab-wrapper
+    .tab {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: unset !important;
+  }
+
+  /* Icon styling for all pinned tabs */
+  #tabs-container
+    .tab-strip
+    > span:has(.is-pinned)
+    .is-pinned
+    .tab-wrapper
+    svg.svg-tab-stack {
+    height: 100% !important;
+    max-height: unset !important;
+  }
+
+  #tabs-container
+    .tab-strip
+    > span:has(.is-pinned)
+    .is-pinned
+    .favicon {
+    width: var(--pinned-icon-size) !important;
+    height: var(--pinned-icon-size) !important;
+    margin: auto !important;
+    justify-self: flex-start;
+    transition: margin var(--animation-speed) cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+
+  #tabs-container
+    .tab-strip
+    > span:has(.is-pinned)
+    .is-pinned
+    .tab-wrapper:hover
+    .favicon {
+    margin: auto !important;
+    transform: translateX(calc(-50% + 8px)) !important;
+  }
+
+  /* Hover expansion base */
+  #tabs-container .tab-strip > span:has(.is-pinned) .is-pinned .tab-wrapper {
+    overflow: hidden;
+    isolation: isolate;
+    z-index: 5;
+    transition: all var(--animation-speed) cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  #tabs-container
+    .tab-strip
+    > span:has(.is-pinned)
+    .is-pinned
+    .tab-wrapper:not(.active):hover {
+    background-color: var(--colorAccentBg, rgba(255, 255, 255, 0.2)) !important;
+    overflow: hidden;
+    position: relative;
+    z-index: 100000000;
+    width: calc(
+      var(--pinned-column-count) * 100% + (var(--pinned-column-count) - 1) *
+        var(--pinned-gap)
+    ) !important;
+    min-height: calc(var(--pinned-tab-height) + var(--pinned-gap)) !important;
+    transition: all var(--animation-speed) cubic-bezier(0.4, 0, 0.2, 1) 0.8s;
+  }
+
+  /* Column-specific hover margin-left for 2 columns */
+  @container style(--pinned-column-count: 2) {
+    #tabs-container
+      .tab-strip
+      > span:nth-child(2n + 1):has(.is-pinned)
+      .is-pinned
+      .tab-wrapper:not(.active):hover {
+      margin-left: 0 !important;
+    }
+
+    #tabs-container
+      .tab-strip
+      > span:nth-child(2n):has(.is-pinned)
+      .is-pinned
+      .tab-wrapper:not(.active):hover {
+      margin-left: calc(-100% - var(--pinned-gap)) !important;
+    }
+  }
+
+  /* Column-specific hover margin-left for 3 columns */
+  @container style(--pinned-column-count: 3) {
+    #tabs-container
+      .tab-strip
+      > span:nth-child(3n + 1):has(.is-pinned)
+      .is-pinned
+      .tab-wrapper:not(.active):hover {
+      margin-left: 0 !important;
+    }
+
+    #tabs-container
+      .tab-strip
+      > span:nth-child(3n + 2):has(.is-pinned)
+      .is-pinned
+      .tab-wrapper:not(.active):hover {
+      margin-left: calc(-100% - var(--pinned-gap)) !important;
+    }
+
+    #tabs-container
+      .tab-strip
+      > span:nth-child(3n):has(.is-pinned)
+      .is-pinned
+      .tab-wrapper:not(.active):hover {
+      margin-left: calc(-200% - 2 * var(--pinned-gap)) !important;
+    }
+  }
+
+  /* Column-specific hover margin-left for 4 columns */
+  @container style(--pinned-column-count: 4) {
+    #tabs-container
+      .tab-strip
+      > span:nth-child(4n + 1):has(.is-pinned)
+      .is-pinned
+      .tab-wrapper:not(.active):hover {
+      margin-left: 0 !important;
+    }
+
+    #tabs-container
+      .tab-strip
+      > span:nth-child(4n + 2):has(.is-pinned)
+      .is-pinned
+      .tab-wrapper:not(.active):hover {
+      margin-left: calc(-100% - var(--pinned-gap)) !important;
+    }
+
+    #tabs-container
+      .tab-strip
+      > span:nth-child(4n + 3):has(.is-pinned)
+      .is-pinned
+      .tab-wrapper:not(.active):hover {
+      margin-left: calc(-200% - 2 * var(--pinned-gap)) !important;
+    }
+
+    #tabs-container
+      .tab-strip
+      > span:nth-child(4n):has(.is-pinned)
+      .is-pinned
+      .tab-wrapper:not(.active):hover {
+      margin-left: calc(-300% - 3 * var(--pinned-gap)) !important;
+    }
+  }
+
+  #tabs-container
+    .tab-strip:has(> span:has(.is-pinned .tab-wrapper:hover))
+    > span:has(.is-pinned:not(:has(.tab-wrapper:hover))) {
+    pointer-events: none;
+  }
+
+  /* Title visibility for all pinned tabs */
+  #tabs-container
+    .tab-strip
+    > span:has(.is-pinned)
+    .is-pinned
+    .title {
+    opacity: 0 !important;
+    max-width: 0 !important;
+    transition: opacity var(--animation-speed) cubic-bezier(0.4, 0, 0.2, 1),
+      max-width var(--animation-speed) cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  #tabs-container
+    .tab-strip
+    > span:has(.is-pinned)
+    .is-pinned
+    .tab-wrapper:hover
+    .title {
+    opacity: 1 !important;
+    max-width: 100% !important;
+  }
+
+  /* Stack counter auto-hide for all pinned tabs */
+  #tabs-container
+    .tab-strip
+    > span:has(.is-pinned)
+    .is-pinned
+    .stack-counter {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 0 !important;
+    min-width: 0 !important;
+    opacity: 0 !important;
+    transition: all var(--animation-speed) cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  #tabs-container
+    .tab-strip
+    > span:has(.is-pinned)
+    .is-pinned
+    .tab-wrapper:hover
+    .stack-counter {
+    display: flex !important;
+    padding: 1px 4px !important;
+    margin-right: 6px !important;
+    max-width: auto !important;
+    min-width: 1.5em !important;
+    opacity: 1 !important;
+  }
+
+  /* Close button disabled for all pinned tabs */
+  #tabs-container
+    .tab-strip
+    > span:has(.is-pinned)
+    .is-pinned
+    .close {
+    display: none !important;
+  }
+
+  /* Active tab outline */
+  #tabs-container
+    .tab-strip
+    > span:has(.is-pinned)
+    .is-pinned.active
+    .tab-wrapper {
+    outline: 2px solid var(--colorAccentBg, #4a90e2);
+  }
+
+  /* Separator - Centered style */
+  #tabs-container .tab-strip .separator {
+    position: relative !important;
+    width: calc(100% - 12px) !important;
+    margin: 0 6px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    transform: none !important;
+  }
+
+  #tabs-container .tab-strip .separator hr {
+    width: 100% !important;
+    margin: 0 !important;
+    height: 1px !important;
+    border: none !important;
+  }
+
+  .tab-wrapper {
+    position: relative;
+    transform: none;
+  }
+
+  .tab-header {
+    min-height: 100%;
+  }
+
+  .svg-tab-selection {
+    min-height: 100%;
+  }
+
+  /* Pin-At-Top */
+
+  @container style(--fluid-pin-at-top: on) {
+    #tabs-container
+      .tab-strip
+      > span:has(.is-pinned)
+      .is-pinned
+      .tab-wrapper:hover {
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 200 !important;
+    }
+
+    #tabs-container .tab-position {
+      position: relative;
+    }
+
+    /* Create background only on the first pinned tab */
+    #tabs-container .tab-strip > span:nth-child(1) .tab-position::after {
+      content: "";
+      position: fixed;
+      top: 70px;
+      left: calc(var(--pinned-gap) / 2);
+      min-width: calc(var(--tabs-container-expand-width) - var(--pinned-gap));
+      height: calc(var(--pinned-tab-height) + var(--pinned-gap));
+      z-index: 10;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0s ease;
+    }
+
+    #tabs-container:hover .tab-strip > span:nth-child(1) .tab-position::after {
+      opacity: 1 !important;
+      transition: opacity var(--animation-speed) ease
+        calc(var(--transition-delay-time-collapse) + var(--animation-speed));
+    }
+
+    #tabs-container.right .tab-strip > span:nth-child(1) .tab-position::after {
+      left: unset;
+      right: calc(var(--pinned-gap) / 2);
+    }
+
+    #tabs-container
+      .tab-strip
+      > span:has(.is-pinned)
+      .is-pinned
+      .tab-wrapper:not(:hover) {
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 150 !important;
+    }
+
+    #tabs-container .tab-strip > span:has(.is-pinned) {
+      position: relative !important;
+      z-index: 1 !important;
+    }
+  }
+}
